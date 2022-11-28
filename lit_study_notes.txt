@@ -1,0 +1,7 @@
+Stijn Heldens, Pieter Hijma, Ben van Werkhoven, Jason Maassen, Adam S. Z. Belloum, Rob van Nieuwpoort:
+The Landscape of Exascale Research: A Data-Driven Literature Analysis. ACM Comput. Surv. 53(2): 23:1-23:43 (2020)
+
+Laurens Versluis, Alexandru Iosup:
+A survey of domains in workflow scheduling in computing infrastructures: Community and keyword analysis, emerging trends, and taxonomies. Future Gener. Comput. Syst. 123: 156-177 (2021)
+
+zenodo
