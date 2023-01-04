@@ -31,7 +31,6 @@ query = """
         (lower(title) LIKE ANY (array ['%energy%', '%power%', 'green']) OR lower(abstract) LIKE ANY (array ['%energy%', '%power%', 'green'])) AND
         (lower(title) LIKE '%graph processing%' OR lower(abstract) LIKE '%graph processing%')
     LIMIT 100
-
     """
 class LDAModel:
     def __init__(self, model, phi, theta):
@@ -126,22 +125,16 @@ generate 2 models all with the same parameters compare them to each other and
     it odd one out skip it for now this reduces the space necesarrily since there cannot be deadlock
     now we run the next round with reduced space
     diff(other, distance='kullback_leibler', num_words=100, n_ann_terms=10, diagonal=False, annotation=True, normed=True)
-
-
     take all permutations of topic matching and take the summed and normalized individual values
     this would mean ordered sampeling with replacement with 4 models that is going to be 8 topics to the power of 4 models which is 4096
     2 topics a 3 models
     01 02 03 12 13 23
-
     21 31 32 41 42 43 51 52 53 54
-
-
-
     """
 n_models = 5
 modelarray = []
 
-for i in range(n_models):
+for model_i in range(n_models):
     model = gensim.models.LdaModel(
         corpus=corpus,
         id2word=id2word,
@@ -168,57 +161,89 @@ for i in range(n_models):
 
     modelarray.append(LDAModel(model, phi_array, theta_array))
 
-    for j in range(i):
+    for model_j in range(model_i):
         #the ndim is the same as the i
-        # 10 20 21 31 32 41 42 43
+        # 10 20 21 30 31 32 40 41 42 43
         # its always gonna touch the new dimension its then also gonna touch dimension j counted from the right
-        print("this is the j {} and this the i {}".format(j,i))
+        print("this is the i {} and this the j {}".format(model_i,model_j))
         #shape i to j 
-        to_be_added = modelarray[i].model.diff(modelarray[j].model, annotation=False)[0]
-        if i == 1:
+        to_be_added = modelarray[model_i].model.diff(modelarray[model_j].model, annotation=False)[0]
+        if model_i == 1:
             new = to_be_added
-        elif new.ndim == i:
+            continue
+        elif new.ndim == model_i:
             print("need to add new dimension")
-            new = np.array([old,old,old,old,old,old,old,old])
-            for z in range(num_topics):
-                to_be_added[]
+            new = np.array([new,new,new,new,new,new,new,new])
+        print("this is the old array named new")
+        print(new)
+        string = "new["
+        for dim in range(new.ndim):
+            if dim == new.ndim - model_i -1: # we need the ith position counted from the right
+                string += "row"
+            elif dim == new.ndim - model_j -1:
+                string += "collumn"
+            else:
+                string += ":"
+            if dim == new.ndim -1:
+                string += "]"
+                break
+            string += ","
+        to_exec = string + "=" + string + "+ to_be_added[row,collumn]"
+        print("this is the to exec string: " + to_exec)
+        for row in range(len(to_be_added)):
+            for collumn in range(len(to_be_added[row])):
+                exec(to_exec)
+        print("this is what is ment to be added ")
+        print(to_be_added)
+        print("this is the new array after combining")
+        print(new)
+        topic_permutations = []
+        for topic_id in range(num_topics):        
+            indices = np.where(new == np.amax(new))
+            ziplist = []
+            for index in indices:
+                ziplist.append(index)
+            # zip the 2 arrays to get the exact coordinates
+            listOfCordinates = list(zip(*ziplist))
+            # travese over the list of cordinates
+            print(listOfCordinates) # always atleast one
+            '''
+            from here take the coordinates and then save them as topic 0 then iterate till we have all 8 topics full
+            
+            '''
+    
+        
 
-        old = new
 
 
 
+# get_document_topics(bow, minimum_probability=None, minimum_phi_value=None, per_word_topics=False)
+# list of (int, float) – Topic distribution for the whole document. Each element in the list is a pair of a topic’s id, and the probability that was assigned to it.
+title = "doc"
+doi = "00.0000/journal.year"
+top_doc_for_topic = [[title,0.0,doi]for i in range(num_topics)]
+importance_metric = 0.0
 
-# # get_document_topics(bow, minimum_probability=None, minimum_phi_value=None, per_word_topics=False)
-# # list of (int, float) – Topic distribution for the whole document. Each element in the list is a pair of a topic’s id, and the probability that was assigned to it.
-# title = "doc"
-# doi = "00.0000/journal.year"
-# top_doc_for_topic = [[title,0.0,doi]for i in range(num_topics)]
-# importance_metric = 0.0
+for i in range(len(result['abstract'])):
+    topic_distribution_for_doc = model.get_document_topics(id2word.doc2bow(result['abstract'][i]),minimum_probability=0, per_word_topics=False)
+    for idx in range(num_topics):
+        #we weigh the topic adherence at 90 percent and the citation normalized at 10 percent)
+        importance_metric = ((topic_distribution_for_doc[idx][1] *0.9) + (result['citations_normalized'][i] *0.1))
+        if top_doc_for_topic[idx][1] < importance_metric:
+            title = " ".join(result['title'][i])
+            top_doc_for_topic[idx][0] = title
+            top_doc_for_topic[idx][1] = importance_metric
+            top_doc_for_topic[idx][2] = result['doi'][i]
 
-# for i in range(len(result['abstract'])):
-#     topic_distribution_for_doc = model.get_document_topics(id2word.doc2bow(result['abstract'][i]),minimum_probability=0, per_word_topics=False)
-#     for idx in range(num_topics):
-#         #we weigh the topic adherence at 90 percent and the citation normalized at 10 percent)
-#         importance_metric = ((topic_distribution_for_doc[idx][1] *0.9) + (result['citations_normalized'][i] *0.1))
-#         if top_doc_for_topic[idx][1] < importance_metric:
-#             title = " ".join(result['title'][i])
-#             top_doc_for_topic[idx][0] = title
-#             top_doc_for_topic[idx][1] = importance_metric
-#             top_doc_for_topic[idx][2] = result['doi'][i]
+# model.save("mainSrc/models/lda_model_1")
 
-# # model.save("mainSrc/models/lda_model_1")
+# data = np.load("mainSrc/models/lda_model_1.expElogbeta.npy")
+# print("len of the first line should be same as number of unique token %d" % len(data[0]))
 
-# # data = np.load("mainSrc/models/lda_model_1.expElogbeta.npy")
-# # print("len of the first line should be same as number of unique token %d" % len(data[0]))
+# print(" ------------------ energy metrics ------------------ ")
+# print("number of papers ", result.shape[0])
+# print("sum of citations ", n_cite)
+# print("max of citations ", max_cite)
 
-# # print(" ------------------ energy metrics ------------------ ")
-# # print("number of papers ", result.shape[0])
-# # print("sum of citations ", n_cite)
-# # print("max of citations ", max_cite)
-
-# # print(" ------------------ final top document for each topic ------------------ ")
-# # print(top_doc_for_topic)
-
-
-
-
+# print(" ------------------ final top document for each topic ------------------ ")
+# print(top_doc_for_topic)
