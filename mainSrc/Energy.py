@@ -113,8 +113,6 @@ print("mean of citations ", mean_cite)
 
 
 
-#we dont need the rest for the metrics
-exit()
 
 # Create Dictionary
 id2word = corpora.Dictionary(result['abstract'])
@@ -285,10 +283,6 @@ for idx in range(num_topics):
 
 
 
-print(" ------------------ energy metrics ------------------ ")
-print("number of papers ", result.shape[0])
-print("sum of citations ", n_cite)
-print("max of citations ", max_cite)
 
 rejected_papers = []
 

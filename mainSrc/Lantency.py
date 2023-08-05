@@ -62,8 +62,6 @@ print("max of citations ", max_cite)
 print("median of citations ", median_cite)
 print("mean of citations ", mean_cite)
 
-exit()
-
 
 
 #remove punctuation
@@ -282,10 +280,6 @@ for idx in range(num_topics):
             top_doc_for_topic[idx][2] = result['doi'][i]
 
 
-print(" ------------------ scalability metrics ------------------ ")
-print("number of papers ", result.shape[0])
-print("sum of citations ", n_cite)
-print("max of citations ", max_cite)
 
 rejected_papers = []
 
