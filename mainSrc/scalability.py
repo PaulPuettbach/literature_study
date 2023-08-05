@@ -22,6 +22,8 @@ db = psycopg2.connect(user="postgres",
                       port="4444",
                       database="aip")
 
+#cant use scale since most false positives then have scale in the form of it is already large scale not the chane which is what we want
+
 query = """
     SELECT
         id, title, abstract, doi, n_citations
@@ -29,9 +31,9 @@ query = """
         publications 
     WHERE 
         (lower(title) LIKE ANY (array ['%serverless%', '%cloud%', '%cluster%', '%data center%']) OR lower(abstract) LIKE ANY (array ['%serverless%', '%cloud%', '%cluster%', '%data center%'])) AND
-        (lower(title) LIKE ANY (array ['%energy%', '%green%', '%cooling%', '%heat%', '%resource utilization%']) OR lower(abstract) LIKE ANY (array ['%energy%', '%green%', '%cooling%', '%heat%', '%resource utilization%'])) AND
+        (lower(title) LIKE ANY (array ['%scalability%', '%scale up%', '%extensibility%']) OR lower(abstract) LIKE ANY (array ['%scalability%', '%scale up%', '%extensibility%'])) AND
         (lower(title) LIKE '%graph processing%' OR lower(abstract) LIKE '%graph processing%') AND
-        (lower(title) NOT LIKE '%journal%' AND lower(title) NOT LIKE '%proceedings%' AND lower(title) NOT LIKE '%keynote%')
+         (lower(title) NOT LIKE '%journal%' AND lower(title) NOT LIKE '%proceedings%' AND lower(title) NOT LIKE '%keynote%')
 
     """
 class LDAModel:
@@ -47,7 +49,16 @@ max_cite = result['n_citations'].max()
 mean_cite = result['n_citations'].mean()
 median_cite = result['n_citations'].median()
 
-result['citations_normalized'] = result['n_citations'] / n_cite 
+result['citations_normalized'] = result['n_citations'] / n_cite
+
+print(" ------------------ scalability metrics ------------------ ")
+print("number of papers ", result.shape[0])
+print("sum of citations ", n_cite)
+print("max of citations ", max_cite)
+print("median of citations ", median_cite)
+print("mean of citations ", mean_cite)
+
+exit()
 
 
 result['title'] = result['title'].map(lambda x: x.split())
@@ -70,18 +81,6 @@ result['abstract'] = result['abstract'].map(lambda line: list(filter(lambda toke
 
 # # #dont know if to stem or lemmatize i think neither
 
-
-
-stop_words = stopwords.words('english')
-#for scientific words
-stop_words.extend(['from', 'subject', 're', 'edu', 'use'])
-
-#to filter out words from the query
-stop_words.extend(['serverless', 'cloud', 'cluster', 'data-center','clouds', 'clusters', 'data-centers', 'energy', 'power', 'green', 'graph processing', 'graph', 'graphprocessing', 'graphs'])
-
-# remove stop words
-result['abstract'] = result['abstract'].map(lambda line: list(filter(lambda token: token not in stop_words, line)))
-
 # # Add bigrams and trigrams to docs (only ones that appear 20 times or more).
 prior = []
 for line in result.abstract.values:
@@ -96,6 +95,18 @@ for line in result['abstract']:
                 print("add a bigram")
                 line[idx].append(token)
 
+
+
+stop_words = stopwords.words('english')
+#for scientific words
+stop_words.extend(['from', 'subject', 're', 'edu', 'use'])
+
+#to filter out words from the query
+stop_words.extend(['serverless', 'cloud', 'cluster', 'data-center', 'scalability', 'scale up', 'extensibility', 'graph processing', 'graph'])
+
+# remove stop words
+result['abstract'] = result['abstract'].map(lambda line: list(filter(lambda token: token not in stop_words, line)))
+
 # long_string = ','.join(prior)
 # # Create a WordCloud object
 # wordcloud = WordCloud(background_color="white", max_words=5000, contour_width=3, contour_color='steelblue')
@@ -103,18 +114,6 @@ for line in result['abstract']:
 # cloud = wordcloud.generate(long_string)
 # # Visualize the word cloud
 # cloud.to_file("mainSrc/img/cloud_vis.png")
-
-print(" ------------------ energy metrics ------------------ ")
-print("number of papers ", result.shape[0])
-print("sum of citations ", n_cite)
-print("max of citations ", max_cite)
-print("median of citations ", median_cite)
-print("mean of citations ", mean_cite)
-
-
-
-#we dont need the rest for the metrics
-exit()
 
 # Create Dictionary
 id2word = corpora.Dictionary(result['abstract'])
@@ -137,7 +136,7 @@ the main idea is this:
 generate 2 models all with the same parameters compare them to each other and
 1. find the topics that are most like each other to do that
     take topic of model a find the one it is most like if that topic recipocates we decide it is the same topic if it doesnt
-    it odd one out skip it for now this reduces the space necesarrily since there cannot be deadlock
+    it is the odd one out, skip it for now. this reduces the space necesarrily since there cannot be deadlock
     now we run the next round with reduced space
     diff(other, distance='kullback_leibler', num_words=100, n_ann_terms=10, diagonal=False, annotation=True, normed=True)
     take all permutations of topic matching and take the summed and normalized individual values
@@ -264,7 +263,7 @@ for topic in range(len(chosen_permutations)):
 
 # get_document_topics(bow, minimum_probability=None, minimum_phi_value=None, per_word_topics=False)
 # list of (int, float) – Topic distribution for the whole document. Each element in the list is a pair of a topic’s id, and the probability that was assigned to it.
-title = "no other docs"
+title = "doc"
 doi = "00.0000/journal.year"
 top_doc_for_topic = [[title,0.0,doi]for i in range(num_topics)]
 importance_metric = 0.0
@@ -284,8 +283,7 @@ for idx in range(num_topics):
             top_doc_for_topic[idx][2] = result['doi'][i]
 
 
-
-print(" ------------------ energy metrics ------------------ ")
+print(" ------------------ scalability metrics ------------------ ")
 print("number of papers ", result.shape[0])
 print("sum of citations ", n_cite)
 print("max of citations ", max_cite)

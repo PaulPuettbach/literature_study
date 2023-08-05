@@ -128,56 +128,42 @@ print(to_exec)
 for row in range(len(three_zero)):
     for collumn in range(len(three_zero[row])):
         exec(to_exec)
-indices = np.where(new == np.amax(new))
-ziplist = []
-for index in indices:
-    ziplist.append(index)
-# zip the 2 arrays to get the exact coordinates
-listOfCordinates = list(zip(*ziplist))
-# travese over the list of cordinates
-print(listOfCordinates) # always atleast one
 
 print("this is 3 0 ")
 print(three_zero)
 print("this is the after combining")
 print(new)
 
-#this shit doesnt fucking work man
+num_topics = 3
+chosen_permutations = []
+for i in range(num_topics):
+    indices = np.where(new == np.amax(new))
+    ziplist = []
+    for index in indices:
+        ziplist.append(index)
+    # zip the 2 arrays to get the exact coordinates
+    listOfCordinates = list(zip(*ziplist))
+    # travese over the list of cordinates
+    print("first set of numbers")
+    print(listOfCordinates) # always atleast one
+    chosen_permutations.append(listOfCordinates[0])
 
-for dim in range(new.ndim):
-    print("this is the current dim {}".format(dim))
-    new = np.delete(new,listOfCordinates[0][dim],dim)
+    for indx in range(new.ndim):
+        string = "new["
+        for dim in range(new.ndim):
+            if dim == indx:
+                string += str(listOfCordinates[0][dim])
+            else:
+                string += ":"
+            if dim == new.ndim -1:
+                string += "]"
+                break
+            string += ","
+        string = string + " = 0"
+        exec(string)
 
-print("this is the new new array")
-print(new)
-indices = np.where(new == np.amax(new))
-ziplist = []
-for index in indices:
-    ziplist.append(index)
-# zip the 2 arrays to get the exact coordinates
-listOfCordinates = list(zip(*ziplist))
-# travese over the list of cordinates
-print(listOfCordinates) # always atleast one
+print("final all")
+print(chosen_permutations) # always atleast one
+    
 
-for dim in range(new.ndim):
-    print("this is the current dim {}".format(dim))
-    new = np.delete(new,listOfCordinates[0][dim],dim)
-
-print("this is the new new array")
-print(new)
-indices = np.where(new == np.amax(new))
-ziplist = []
-for index in indices:
-    ziplist.append(index)
-# zip the 2 arrays to get the exact coordinates
-listOfCordinates = list(zip(*ziplist))
-# travese over the list of cordinates
-print(listOfCordinates) # always atleast one
-
-
-
-# print("this is the to add \n", AC)
-# print("this is the old \n", AB)
-# print("this is the new \n", new)
-
-# print("this is test", new[0,:,:])
+print("this is the new \n", new)
