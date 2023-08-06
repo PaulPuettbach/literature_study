@@ -1,0 +1,7 @@
+psycopg2
+re
+gensim
+nltk
+numpy
+pandas
+wordcloud

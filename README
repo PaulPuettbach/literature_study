@@ -1,0 +1,4 @@
+first need to get AIP up and running
+then need python3, docker, and venv
+then for the first time run istall.sh
+and after run run.sh
